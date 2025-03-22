@@ -12,11 +12,14 @@ const UploadImage = ({ image }) => {
     formData.append("image", blob, "placa.jpg");
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/upload/", formData);
-      setResult(response.data.placa || "Placa não detectada");
-    } catch (error) {
-      setResult("Erro ao processar a imagem.");
-    }
+        const response = await axios.post("http://127.0.0.1:8000/api/upload/", formData);
+        console.log("Resposta da API:", response);
+        setResult(response.data.placa || "Placa não detectada");
+      } catch (error) {
+        console.error("Erro na requisição:", error.response || error);
+        setResult("Erro ao processar a imagem.");
+      }
+      
   };
 
   return (
