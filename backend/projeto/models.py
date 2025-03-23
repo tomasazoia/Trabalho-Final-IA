@@ -15,7 +15,7 @@ class Viagem(models.Model):
     data_partida = models.DateTimeField()
     data_chegada = models.DateTimeField(null=True, blank=True)
     distancia = models.FloatField(null=True, blank=True)  # Distância em km
-
+    
     def __str__(self):
         return f"Viagem de {self.usuario.nome} de {self.partida} para {self.chegada}"
 

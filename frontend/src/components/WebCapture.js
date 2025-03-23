@@ -12,11 +12,27 @@ const WebcamCapture = ({ onCapture }) => {
   };
 
   return (
-    <div>
+    <div style={{ textAlign: "center", padding: "10px" }}>
       <h2>Capturar Imagem</h2>
-      <Webcam ref={webcamRef} screenshotFormat="image/jpeg" />
-      <button onClick={capture}>Capturar</button>
-      {image && <img src={image} alt="Captura" style={{ width: "300px" }} />}
+      <div style={{ width: "300px", margin: "0 auto" }}>
+        <Webcam
+          ref={webcamRef}
+          screenshotFormat="image/jpeg"
+          width={300} // Define a largura
+          height={200} // Define a altura
+          style={{ borderRadius: "10px", boxShadow: "0 4px 8px rgba(0,0,0,0.2)" }}
+        />
+      </div>
+      <button onClick={capture} style={{ marginTop: "10px", padding: "8px 16px" }}>
+        Capturar
+      </button>
+      {image && (
+        <img
+          src={image}
+          alt="Captura"
+          style={{ width: "200px", marginTop: "10px", borderRadius: "5px" }}
+        />
+      )}
     </div>
   );
 };
