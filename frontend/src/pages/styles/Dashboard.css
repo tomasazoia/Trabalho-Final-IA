@@ -1,0 +1,66 @@
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+}
+
+.dashboard-content {
+    flex-grow: 1;
+    padding: 2%;
+    text-align: center;
+}
+
+.input-container {
+    display: flex;
+    gap: 2%;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 90%;
+    margin: 20px auto;
+}
+
+.input-container input {
+    width: 40%;
+    /* Cada input ocupa 40% da largura */
+    min-width: 150px;
+}
+
+.input-container button {
+    width: 15%;
+    /* O botão ocupa 15% */
+    min-width: 100px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .input-container {
+        flex-direction: column;
+        /* Empilha inputs em telas pequenas */
+        gap: 10px;
+    }
+
+    .input-container input,
+    .input-container button {
+        width: 80%;
+        /* Aumenta a largura dos inputs no mobile */
+    }
+}
+
+.checkbox-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1%;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.checkbox-container label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+}
+
+.checkbox-container input {
+    transform: scale(1.2);
+}

@@ -14,7 +14,7 @@ const WebcamCapture = ({ onCapture }) => {
   return (
     <div style={{ textAlign: "center", padding: "10px" }}>
       <h2>Capturar Imagem</h2>
-      <div style={{ width: "300px", margin: "0 auto" }}>
+      <div>
         <Webcam
           ref={webcamRef}
           screenshotFormat="image/jpeg"
