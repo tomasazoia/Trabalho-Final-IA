@@ -23,5 +23,5 @@ class Viagem(models.Model):
     class Meta:
         app_label = "projeto"  
     def __str__(self):
-        return f"Viagem de {self.usuario.nome} de {self.partida} para {self.chegada}"
+        return f"Viagem de {self.user.nome} de {self.partida} para {self.chegada}"
 

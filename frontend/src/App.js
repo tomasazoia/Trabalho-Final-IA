@@ -45,6 +45,7 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        localStorage.setItem("userId", data.id);
         setMessage("Login bem-sucedido!");
         setTimeout(() => {
           navigate("/dashboard");
@@ -78,7 +79,6 @@ function Login() {
                 />
               </div>
 
-            </form>
 
             <hr />
 
@@ -91,7 +91,8 @@ function Login() {
 
             {message && <div className="alert alert-info text-center mt-3">{message}</div>}
             <button type="submit" className="btn btn-primary w-100">Entrar</button>
-            
+            </form>
+
           </div>
           
         </div>

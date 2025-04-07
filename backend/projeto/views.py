@@ -8,8 +8,15 @@ import os
 import numpy as np
 import easyocr  # Biblioteca OCR
 from ultralytics import YOLO
-from .models import User  # Importar o modelo User
-
+from .models import User, Viagem
+from .algorithms.metodos import custo_uniforme, aprofundamento_progressivo, procura_sofrega, a_estrela
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Viagem, User
+from .serializers import ViagemSerializer
+from datetime import datetime
+from django.utils.timezone import now
 
 # Carregar o modelo treinado (substituir pelo caminho correto)
 model = YOLO("../best.pt")
@@ -121,12 +128,13 @@ def salvar_usuario_matricula(request):
             )
 
             if not created:
-                return JsonResponse({"message": "Usuário já registrado", "nome": user.nome, "matricula": user.matricula})
+                return JsonResponse({"message": "Usuário já registrado", "nome": user.nome, "id": user.id,"matricula": user.matricula})
 
             return JsonResponse({
                 "message": "Usuário cadastrado com sucesso",
                 "nome": user.nome,
                 "matricula": user.matricula,
+                "id": user.id,  
                 "placa_path": cropped_plate_path
             })
 
@@ -159,3 +167,53 @@ def salvar_usuario(request):
             return JsonResponse({"error": "Erro ao processar JSON"}, status=400)
 
     return JsonResponse({"error": "Método não permitido"}, status=405)
+
+@api_view(['POST'])
+def calcular_rota(request):
+    print("Requisição recebida:", request.data)
+
+    try:
+        user_id = request.data.get("user_id")
+        partida = request.data.get("partida")
+        chegada = request.data.get("chegada")
+        algoritmo = request.data.get("algoritmo")
+
+        print(f"Dados recebidos: user_id={user_id}, partida={partida}, chegada={chegada}, algoritmo={algoritmo}")
+
+        user = User.objects.get(id=user_id)
+        print(f"Usuário encontrado: {user}")
+
+        if algoritmo == "custo_uniforme":
+            caminho, distancia = custo_uniforme(partida, chegada)
+        elif algoritmo == "aprofundamento":
+            caminho, distancia = aprofundamento_progressivo(partida, chegada)
+        elif algoritmo == "sofrega":
+            caminho, distancia = procura_sofrega(partida, chegada)
+        elif algoritmo == "a_estrela":
+            caminho, distancia = a_estrela(partida, chegada)
+        else:
+            return Response({'erro': 'Algoritmo inválido.'}, status=400)
+
+        print(f"Caminho encontrado: {caminho}, Distância: {distancia}")
+
+        if not caminho:
+            return Response({'erro': 'Caminho não encontrado.'}, status=404)
+
+        viagem = Viagem.objects.create(
+            user=user,
+            partida=partida,
+            chegada=chegada,
+            data_partida=now(),
+            distancia=distancia,
+        )
+        print(f"Viagem salva: {viagem}")
+
+        return Response({
+            'caminho': caminho,
+            'distancia_total_km': distancia,
+            'mensagem': 'Rota calculada com sucesso.'
+        }, status=200)
+
+    except Exception as e:
+        print(f"Erro inesperado: {str(e)}")
+        return Response({'erro': f'Erro inesperado: {str(e)}'}, status=500)
