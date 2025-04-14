@@ -1,120 +1,99 @@
 import heapq
-from .grafo import grafo, heuristica_faro
+from .grafo import grafo, heuristica_faro  # Importar o grafo e as heurísticas do grafo.py
 
+class Grafo:
+    def __init__(self):
+        # Usar o grafo e heurísticas do grafo.py
+        self.grafo = grafo
+        self.heuristica = heuristica_faro
 
-def custo_uniforme(inicio, objetivo):
-    fila = [(0, inicio, [inicio])]  # (custo acumulado, nó atual, caminho percorrido)
-    visitados = set()
-
-    while fila:
-        custo, atual, caminho = heapq.heappop(fila)
-
-        print(f"Visitando: {atual}, Custo: {custo}, Caminho: {caminho}")
-
-        if atual == objetivo:
-            print(f"\n➡️ Caminho final: {caminho}, Distância total: {custo} km\n")
-            return caminho, custo
-
-        if atual in visitados:
-            continue
-
-        visitados.add(atual)
-
-        for vizinho, distancia in grafo.get(atual, {}).items():
-            if vizinho not in visitados:
-                heapq.heappush(fila, (custo + distancia, vizinho, caminho + [vizinho]))
-
-    return None, float("inf")
-
-
-def procura_sofrega(inicio, objetivo="Faro"):
-    fila = [(heuristica_faro[inicio], inicio, [inicio])]  # (heurística, nó atual, caminho percorrido)
-    visitados = set()
-
-    while fila:
-        heur, atual, caminho = heapq.heappop(fila)
-
-        print(f"Visitando: {atual}, Heurística: {heur}, Caminho: {caminho}")
-
-        if atual == objetivo:
-            print(f"\n➡️ Caminho final: {caminho}\n")
-            return caminho, heur  # Retorna o caminho e a heurística final
-
-        if atual in visitados:
-            continue
-
-        visitados.add(atual)
-
-        for vizinho in grafo.get(atual, {}):
-            if vizinho not in visitados:
-                heapq.heappush(fila, (heuristica_faro[vizinho], vizinho, caminho + [vizinho]))
-
-        distancia_total = sum(
-            grafo[caminho[i]][caminho[i+1]] for i in range(len(caminho) - 1)
-        )
-        return caminho, distancia_total
-
-
-def a_estrela(inicio, objetivo="Faro"):
-    fila = [(heuristica_faro[inicio], 0, inicio, [inicio])]  # (f = g + h, custo acumulado, nó atual, caminho percorrido)
-    visitados = set()
-
-    while fila:
-        f, custo, atual, caminho = heapq.heappop(fila)
-
-        print(f"Visitando: {atual}, F: {f}, Custo: {custo}, Caminho: {caminho}")
-
-        if atual == objetivo:
-            print(f"\n➡️ Caminho final: {caminho}, Distância total: {custo} km\n")
-            return caminho, custo
-
-        if atual in visitados:
-            continue
-
-        visitados.add(atual)
-
-        for vizinho, distancia in grafo.get(atual, {}).items():
-            if vizinho not in visitados:
-                novo_custo = custo + distancia
-                f = novo_custo + heuristica_faro[vizinho]
-                heapq.heappush(fila, (f, novo_custo, vizinho, caminho + [vizinho]))
-
-    return None, float("inf")
-
-
-def profundidade_limitada(atual, objetivo, limite, caminho, visitados):
-    if atual == objetivo:
-        return caminho
-
-    if limite <= 0:
-        return None
-
-    visitados.add(atual)
-
-    for vizinho in grafo.get(atual, {}):
-        if vizinho not in visitados:
-            novo_caminho = profundidade_limitada(
-                vizinho, objetivo, limite - 1, caminho + [vizinho], visitados
-            )
-            if novo_caminho:
-                return novo_caminho
-
-    return None
-
-
-def aprofundamento_progressivo(inicio, objetivo):
-    limite = 0
-    while True:
+    def custo_uniforme(self, inicio, destino):
         visitados = set()
-        print(f"\n🔁 Tentando com profundidade {limite}")
-        caminho = profundidade_limitada(inicio, objetivo, limite, [inicio], visitados)
+        fila = [(0, inicio, [])]  # (custo acumulado, nó atual, caminho)
+        nos_explorados = 0  # Contador de nós explorados
 
-        if caminho:
-            # Calcula distância real usando os pesos do grafo
-            distancia_total = sum(
-                grafo[caminho[i]][caminho[i + 1]] for i in range(len(caminho) - 1)
-            )
-            print(f"\n➡️ Caminho final: {caminho}, Distância total: {distancia_total} km\n")
-            return caminho, distancia_total
+        while fila:
+            custo, atual, caminho = heapq.heappop(fila)
+            if atual in visitados:
+                continue
+            caminho = caminho + [atual]
+            visitados.add(atual)
+            nos_explorados += 1  # Incrementa o contador ao explorar um nó
 
-        limite += 1
+            if atual == destino:
+                return caminho, custo, nos_explorados  # Retorna também os nós explorados
+
+            for vizinho, peso in self.grafo[atual].items():
+                if vizinho not in visitados:
+                    heapq.heappush(fila, (custo + peso, vizinho, caminho))
+
+        return None, float('inf'), nos_explorados  # Retorna os nós explorados mesmo se não encontrar o destino
+
+    def aprofundamento_progressivo(self, inicio, destino, limite_max=50):
+        def dfs_limite(no, destino, limite, caminho, custo, visitados):
+            if limite == 0:
+                return None, float('inf'), visitados
+            if no == destino:
+                return caminho + [no], custo, visitados
+            visitados.add(no)  # Marca o nó como explorado
+            for vizinho, peso in self.grafo[no].items():
+                if vizinho not in caminho:
+                    resultado, custo_total, visitados = dfs_limite(
+                        vizinho, destino, limite - 1, caminho + [no], custo + peso, visitados
+                    )
+                    if resultado:
+                        return resultado, custo_total, visitados
+            return None, float('inf'), visitados
+
+        visitados = set()
+        for limite in range(1, limite_max + 1):
+            resultado, custo, visitados = dfs_limite(inicio, destino, limite, [], 0, visitados)
+            if resultado:
+                return resultado, custo, len(visitados)  # Retorna o número de nós explorados
+        return None, float('inf'), len(visitados)
+
+    def procura_sofrega(self, inicio, destino):
+        visitados = set()
+        fila = [(self.heuristica[inicio], inicio, [])]  # (heurística, nó atual, caminho)
+        nos_explorados = 0  # Contador de nós explorados
+
+        while fila:
+            _, atual, caminho = heapq.heappop(fila)
+            if atual in visitados:
+                continue
+            caminho = caminho + [atual]
+            visitados.add(atual)
+            nos_explorados += 1  # Incrementa o contador ao explorar um nó
+
+            if atual == destino:
+                return caminho, nos_explorados  # Retorna também os nós explorados
+
+            for vizinho in self.grafo[atual]:
+                if vizinho not in visitados:
+                    heapq.heappush(fila, (self.heuristica[vizinho], vizinho, caminho))
+
+        return None, nos_explorados  # Retorna os nós explorados mesmo se não encontrar o destino
+
+    def a_estrela(self, inicio, destino):
+        visitados = set()
+        fila = [(0 + self.heuristica[inicio], 0, inicio, [])]  # (f(n), g(n), nó atual, caminho)
+        nos_explorados = 0  # Contador de nós explorados
+
+        while fila:
+            f, g, atual, caminho = heapq.heappop(fila)
+            if atual in visitados:
+                continue
+            caminho = caminho + [atual]
+            visitados.add(atual)
+            nos_explorados += 1  # Incrementa o contador ao explorar um nó
+
+            if atual == destino:
+                return caminho, g, nos_explorados  # Retorna também os nós explorados
+
+            for vizinho, peso in self.grafo[atual].items():
+                if vizinho not in visitados:
+                    g_novo = g + peso
+                    f_novo = g_novo + self.heuristica[vizinho]
+                    heapq.heappush(fila, (f_novo, g_novo, vizinho, caminho))
+
+        return None, float('inf'), nos_explorados  # Retorna os nós explorados mesmo se não encontrar o destino

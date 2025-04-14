@@ -1,97 +1,101 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./styles/Dashboard.css";
 import Sidebar from "../components/Sidebar";
-import MapComponent from "../components/mapComponent";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 function Dashboard() {
-  const navigate = useNavigate();
-  const [pontoPartida, setPontoPartida] = useState("");
-  const [pontoChegada, setPontoChegada] = useState("");
-  const [metodo, setMetodo] = useState("");
+  const [inicio, setInicio] = useState("");
+  const [destino, setDestino] = useState("");
+  const [metodo, setMetodo] = useState("custo_uniforme");
+  const [resultado, setResultado] = useState(null);
 
-  const handleCalcularRota = async () => {
-    if (!pontoPartida || !pontoChegada || !metodo) {
-      alert("Preencha todos os campos!");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!inicio || !destino) {
+      alert("Por favor, selecione o ponto de partida e o destino.");
       return;
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/calcular_rota/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: parseInt(localStorage.getItem("userId")),
-          partida: pontoPartida,
-          chegada: pontoChegada,
-          algoritmo: metodo,
-        }),
+      const userId = localStorage.getItem("userId"); // Recupera o ID do usuário logado
+
+      const response = await axios.get("http://127.0.0.1:8000/api/calcular_caminho/", {
+        params: { metodo, inicio, destino,  user_id: userId },
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        console.log("Rota calculada:", data);
-        alert(`Distância: ${data.distancia_total_km} km\nCaminho: ${data.caminho.join(" ➝ ")}`);
-        // podes navegar ou passar os dados para outro componente aqui
-      } else {
-        alert(data.erro || "Erro ao calcular rota");
-      }
+      setResultado(response.data);
     } catch (error) {
-      console.error("Erro:", error);
-      alert("Erro ao contactar o servidor.");
+      console.error("Erro ao calcular o caminho:", error);
+      alert("Erro ao calcular o caminho. Verifique os dados e tente novamente.");
     }
   };
 
   return (
     <div className="dashboard-container">
-      <Sidebar className="sidebar" />
+      <Sidebar />
       <div className="dashboard-content">
-        <h1>Escolha o seu destino</h1>
-
-        <div className="input-container">
+        <h1>Calcular Rotas</h1>
+        <form onSubmit={handleSubmit} className="form-container">
           <input
-            className="form-control"
             type="text"
             placeholder="Ponto de Partida"
-            value={pontoPartida}
-            onChange={(e) => setPontoPartida(e.target.value)}
+            value={inicio}
+            onChange={(e) => setInicio(e.target.value)}
+            required
           />
-
           <input
-            className="form-control"
             type="text"
-            placeholder="Ponto de Chegada"
-            value={pontoChegada}
-            onChange={(e) => setPontoChegada(e.target.value)}
+            placeholder="Destino"
+            value={destino}
+            onChange={(e) => setDestino(e.target.value)}
+            required
           />
-        </div>
+          <select value={metodo} onChange={(e) => setMetodo(e.target.value)}>
+            <option value="custo_uniforme">Custo Uniforme</option>
+            <option value="aprofundamento_progressivo">Aprofundamento Progressivo</option>
+            <option value="procura_sofrega">Procura Sofrega</option>
+            <option value="a_estrela">A*</option>
+          </select>
+          <button type="submit">Calcular</button>
+        </form>
 
-        <div className="dropdown">
-          <button
-            className="btn btn-secondary dropdown-toggle"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            {metodo || "Escolha um método"}
-          </button>
-          <ul className="dropdown-menu">
-            <li><button className="dropdown-item" onClick={() => setMetodo("custo_uniforme")}>Custo Uniforme</button></li>
-            <li><button className="dropdown-item" onClick={() => setMetodo("aprofundamento")}>Aprofundamento Progressivo</button></li>
-            <li><button className="dropdown-item" onClick={() => setMetodo("sofrega")}>Procura Sôfrega</button></li>
-            <li><button className="dropdown-item" onClick={() => setMetodo("a_estrela")}>A*</button></li>
-          </ul>
-        </div>
+        {resultado && (
+          <div className="resultado-container">
+            <div className="resumo-box">
+              {resultado && resultado.metodo && (
+                <p><strong>Método:</strong> {resultado.metodo.replace("_", " ").toUpperCase()}</p>
+              )}              <p><strong>Distância Total:</strong> {resultado.custo} km</p>
+              <p><strong>Nós Explorados:</strong> {resultado.nos_explorados}</p>
+            </div>
 
-        <button className="btn btn-primary mt-3" onClick={handleCalcularRota}>
-          Calcular Rota
-        </button>
-
-        <MapComponent />
+            <h3>Caminho Encontrado</h3>
+            <div>
+              {resultado.caminho.map((cidade, index) => (
+                
+                <div key={index} className="passo">
+                  <div className="passo-numero">{index + 1}</div>
+                  <div className="passo-info">
+                    <strong>{cidade}</strong>
+                    <div className="detalhes">
+                      {index === 0 && "Cidade inicial"}
+                      {index < resultado.caminho.length - 1 && (
+                        <>
+                          • Próxima cidade
+                        </>
+                      )}
+                      {index === resultado.caminho.length - 1 && (
+                        <>
+                          • Cidade destino
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

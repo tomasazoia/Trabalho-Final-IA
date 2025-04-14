@@ -1,66 +1,83 @@
 .dashboard-container {
+    padding: 2rem;
+    font-family: Arial, sans-serif;
+  }
+  
+  .dashboard-content {
+    max-width: 800px;
+    margin: auto;
+  }
+  
+  .form-container {
     display: flex;
-    height: 100vh;
-}
-
-.dashboard-content {
-    flex-grow: 1;
-    padding: 2%;
-    text-align: center;
-}
-
-.input-container {
-    display: flex;
-    gap: 2%;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    max-width: 90%;
-    margin: 20px auto;
-}
-
-.input-container input {
-    width: 40%;
-    /* Cada input ocupa 40% da largura */
-    min-width: 150px;
-}
-
-.input-container button {
-    width: 15%;
-    /* O botão ocupa 15% */
-    min-width: 100px;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .input-container {
-        flex-direction: column;
-        /* Empilha inputs em telas pequenas */
-        gap: 10px;
-    }
-
-    .input-container input,
-    .input-container button {
-        width: 80%;
-        /* Aumenta a largura dos inputs no mobile */
-    }
-}
-
-.checkbox-container {
-    display: flex;
+    gap: 1rem;
     flex-wrap: wrap;
-    gap: 1%;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.checkbox-container label {
+    margin-bottom: 2rem;
+  }
+  
+  input, select, button {
+    padding: 0.5rem;
+    font-size: 1rem;
+  }
+  
+  button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  .resultado-container {
+    background-color: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .resumo-box {
+    background-color: #e9f0ff;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
     display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 16px;
-}
-
-.checkbox-container input {
-    transform: scale(1.2);
-}
+    justify-content: space-between;
+    font-weight: bold;
+  }
+  
+  .caminho-lista {
+    border-left: 2px solid #ccc;
+    margin-left: 1rem;
+    padding-left: 1rem;
+  }
+  
+  .passo {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+  
+  .passo-numero {
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    font-weight: bold;
+    margin-right: 1rem;
+  }
+  
+  .passo-info {
+    flex: 1;
+  }
+  
+  .detalhes {
+    font-size: 0.9rem;
+    color: #555;
+  }

@@ -9,14 +9,15 @@ import numpy as np
 import easyocr  # Biblioteca OCR
 from ultralytics import YOLO
 from .models import User, Viagem
-from .algorithms.metodos import custo_uniforme, aprofundamento_progressivo, procura_sofrega, a_estrela
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Viagem, User
-from .serializers import ViagemSerializer
 from datetime import datetime
 from django.utils.timezone import now
+from .algorithms.metodos import Grafo
+from django.shortcuts import render
+from django.http import JsonResponse
 
 # Carregar o modelo treinado (substituir pelo caminho correto)
 model = YOLO("../best.pt")
@@ -168,47 +169,87 @@ def salvar_usuario(request):
 
     return JsonResponse({"error": "Método não permitido"}, status=405)
 
-@api_view(["POST"])
-def calcular_rota(request):
-    user_id = request.data.get("user_id")
-    partida = request.data.get("partida")
-    chegada = request.data.get("chegada")
-    algoritmo = request.data.get("algoritmo")
+@csrf_exempt
+def calcular_caminho(request):
+    if request.method == "GET":
+        metodo = request.GET.get('metodo')
+        inicio = request.GET.get('inicio')
+        destino = request.GET.get('destino')
+        user_id = request.GET.get('user_id')  # ID do usuário logado enviado pelo frontend
 
-    if not all([user_id, partida, chegada, algoritmo]):
-        return Response({"erro": "Dados incompletos"}, status=400)
+        # Verificar se o usuário existe
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({'erro': 'Usuário não encontrado'}, status=404)
 
-    try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        return Response({"erro": "Usuário não encontrado"}, status=404)
+        grafo = Grafo()
 
-    algoritmos = {
-        "custo_uniforme": custo_uniforme,
-        "sofrega": procura_sofrega,
-        "a_estrela": a_estrela,
-        "aprofundamento": aprofundamento_progressivo
-    }
+        if metodo == 'custo_uniforme':
+            caminho, custo, nos_explorados = grafo.custo_uniforme(inicio, destino)
+        elif metodo == 'aprofundamento_progressivo':
+            caminho, custo, nos_explorados = grafo.aprofundamento_progressivo(inicio, destino)
+        elif metodo == 'procura_sofrega':
+            caminho, nos_explorados = grafo.procura_sofrega(inicio, destino)
+            custo = None
+        elif metodo == 'a_estrela':
+            caminho, custo, nos_explorados = grafo.a_estrela(inicio, destino)
+        else:
+            return JsonResponse({'erro': 'Método inválido'}, status=400)
 
-    func = algoritmos.get(algoritmo)
-    if not func:
-        return Response({"erro": "Algoritmo inválido"}, status=400)
+        if not caminho:
+            return JsonResponse({'erro': 'Caminho não encontrado'}, status=404)
 
-    caminho, distancia = func(partida, chegada)
+        # Salvar a viagem na base de dados
+        viagem = Viagem.objects.create(
+            user=user,
+            partida=inicio,
+            chegada=destino,
+            data_partida=now(),
+            distancia=custo,
+            metodo=metodo,
+            caminho=caminho,
+            nos_expandidos=nos_explorados
+        )
 
-    if not caminho:
-        return Response({"erro": "Caminho não encontrado"}, status=404)
+        return JsonResponse({
+            'metodo': metodo,
+            'caminho': caminho,
+            'custo': custo,
+            'nos_explorados': nos_explorados,
+            'viagem_id': viagem.id  # Retorna o ID da viagem criada
+        })
 
-    viagem = Viagem.objects.create(
-        user=user,
-        partida=partida,
-        chegada=chegada,
-        data_partida=now(),
-        distancia=distancia
-    )
+@csrf_exempt
+def listar_viagens(request):
+    if request.method == "GET":
+        user_id = request.GET.get('user_id')  # ID do usuário logado enviado pelo frontend
 
-    return Response({
-        "caminho": caminho,
-        "distancia_total_km": distancia,
-        "viagem_id": viagem.id
-    })
+        # Verificar se o usuário existe
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({'erro': 'Usuário não encontrado'}, status=404)
+
+        # Obter todas as viagens associadas ao usuário
+        viagens = Viagem.objects.filter(user=user).order_by('-data_partida')
+
+        # Serializar as viagens para JSON
+        viagens_serializadas = [
+            {
+                "id": viagem.id,
+                "partida": viagem.partida,
+                "chegada": viagem.chegada,
+                "data_partida": viagem.data_partida.strftime('%Y-%m-%d %H:%M:%S'),
+                "data_chegada": viagem.data_chegada.strftime('%Y-%m-%d %H:%M:%S') if viagem.data_chegada else None,
+                "distancia": viagem.distancia,
+                "metodo": viagem.metodo,
+                "caminho": viagem.caminho,
+                "nos_expandidos": viagem.nos_expandidos,
+            }
+            for viagem in viagens
+        ]
+
+        return JsonResponse({"viagens": viagens_serializadas}, status=200)
+
+    return JsonResponse({"erro": "Método não permitido"}, status=405)

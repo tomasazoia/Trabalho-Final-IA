@@ -12,7 +12,7 @@ function Sidebar() {
 
   return (
     <div
-      className="sidebar bg-dark text-white d-flex flex-column align-items-center p-3"
+      className="sidebar bg-primary text-white d-flex flex-column align-items-center p-3"
       style={{
         width: expanded ? "10%" : "4%",
         height: "100vh",
