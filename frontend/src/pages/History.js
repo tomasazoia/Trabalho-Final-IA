@@ -47,10 +47,16 @@ function History() {
               <div key={viagem.id} className="viagem-card">
                 <h2>{viagem.partida} → {viagem.chegada}</h2>
                 <p><strong>Data:</strong> {viagem.data_partida}</p>
-                <p><strong>Método:</strong> {viagem.metodo.replace("_", " ").toUpperCase()}</p>
+                <p>
+                  <strong>Método:</strong>{" "}
+                  {viagem.metodo ? viagem.metodo.replace("_", " ").toUpperCase() : "Desconhecido"}
+                </p>
                 <p><strong>Distância:</strong> {viagem.distancia} km</p>
                 <p><strong>Nós Explorados:</strong> {viagem.nos_expandidos}</p>
-                <p><strong>Caminho:</strong> {viagem.caminho.join(" → ")}</p>
+                <p>
+                  <strong>Caminho:</strong>{" "}
+                  {Array.isArray(viagem.caminho) ? viagem.caminho.join(" → ") : "Caminho não disponível"}
+                </p>
               </div>
             ))}
           </div>

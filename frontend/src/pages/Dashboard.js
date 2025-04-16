@@ -9,6 +9,12 @@ function Dashboard() {
   const [metodo, setMetodo] = useState("custo_uniforme");
   const [resultado, setResultado] = useState(null);
 
+  const distritos = [
+    "Aveiro", "Beja", "Braga", "Bragança", "Castelo Branco", "Coimbra", "Évora",
+    "Faro", "Guarda", "Leiria", "Lisboa", "Portalegre", "Porto", "Santarém",
+    "Setúbal", "Viana do Castelo", "Vila Real", "Viseu"
+  ];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -37,20 +43,34 @@ function Dashboard() {
       <div className="dashboard-content">
         <h1>Calcular Rotas</h1>
         <form onSubmit={handleSubmit} className="form-container">
-          <input
-            type="text"
-            placeholder="Ponto de Partida"
+          <select
             value={inicio}
             onChange={(e) => setInicio(e.target.value)}
             required
-          />
-          <input
-            type="text"
-            placeholder="Destino"
+          >
+            <option value="" disabled>
+              Selecione o Ponto de Partida
+            </option>
+            {distritos.map((distrito) => (
+              <option key={distrito} value={distrito}>
+                {distrito}
+              </option>
+            ))}
+          </select>
+          <select
             value={destino}
             onChange={(e) => setDestino(e.target.value)}
             required
-          />
+          >
+            <option value="" disabled>
+              Selecione o Destino
+            </option>
+            {distritos.map((distrito) => (
+              <option key={distrito} value={distrito}>
+                {distrito}
+              </option>
+            ))}
+          </select>
           <select value={metodo} onChange={(e) => setMetodo(e.target.value)}>
             <option value="custo_uniforme">Custo Uniforme</option>
             <option value="aprofundamento_progressivo">Aprofundamento Progressivo</option>
