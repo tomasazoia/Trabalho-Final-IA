@@ -15,12 +15,12 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!username || !capturedImage) {
       setMessage("Por favor, insira um nome e capture uma imagem.");
       return;
     }
-
+  
     let imageFile = capturedImage;
     if (capturedImage.startsWith("data:image")) {
       const byteString = atob(capturedImage.split(",")[1]);
@@ -31,22 +31,24 @@ function Login() {
       }
       imageFile = new Blob([uint8Array], { type: "image/jpeg" });
     }
-
+  
     const formData = new FormData();
     formData.append("nome", username);
     formData.append("image", imageFile, "captured.jpg");
-
+  
     try {
       const response = await fetch("http://127.0.0.1:8000/api/salvar_usuario_matricula/", {
         method: "POST",
         body: formData,
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         localStorage.setItem("userId", data.id);
-        setMessage("Login bem-sucedido!");
+        localStorage.setItem("userName", data.nome);
+        localStorage.setItem("matricula", data.matricula);
+        setMessage(data.message); // Exibe a mensagem do backend
         setTimeout(() => {
           navigate("/dashboard");
         }, 2000);

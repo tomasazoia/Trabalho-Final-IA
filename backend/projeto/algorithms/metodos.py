@@ -54,11 +54,11 @@ class Grafo:
     def procura_sofrega(self, inicio, destino):
         heuristica = self.heuristicas[destino]  # heurística adaptada ao destino
         visitados = set()
-        fila = [(heuristica[inicio], inicio, [])]
+        fila = [(heuristica[inicio], 0, inicio, [])]  # (h(n), custo acumulado, nó atual, caminho)
         nos_explorados = 0
 
         while fila:
-            _, atual, caminho = heapq.heappop(fila)
+            _, custo_acumulado, atual, caminho = heapq.heappop(fila)
             if atual in visitados:
                 continue
             caminho = caminho + [atual]
@@ -66,13 +66,13 @@ class Grafo:
             nos_explorados += 1
 
             if atual == destino:
-                return caminho, nos_explorados
+                return caminho, custo_acumulado, nos_explorados  # Retorna o caminho, custo total e nós explorados
 
-            for vizinho in self.grafo[atual]:
+            for vizinho, peso in self.grafo[atual].items():
                 if vizinho not in visitados:
-                    heapq.heappush(fila, (heuristica[vizinho], vizinho, caminho))
+                    heapq.heappush(fila, (heuristica[vizinho], custo_acumulado + peso, vizinho, caminho))
 
-        return None, nos_explorados
+        return None, float('inf'), nos_explorados  # Retorna infinito se não encontrar o destino
 
     def a_estrela(self, inicio, destino):
         heuristica = self.heuristicas[destino]  # heurística adaptada ao destino

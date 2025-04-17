@@ -75,9 +75,6 @@ def processar_imagem(request):
 @csrf_exempt
 def salvar_usuario_matricula(request):
     if request.method == "POST":
-        # 🚨 Depuração para verificar se os dados foram recebidos corretamente
-        print("Recebendo requisição POST...")
-
         if "image" not in request.FILES or "nome" not in request.POST:
             return JsonResponse({"message": "Imagem ou nome não encontrados no request"}, status=400)
 
@@ -128,16 +125,24 @@ def salvar_usuario_matricula(request):
                 defaults={"nome": nome, "data_registro": now()}
             )
 
-            if not created:
-                return JsonResponse({"message": "Usuário já registrado", "nome": user.nome, "id": user.id,"matricula": user.matricula})
-
-            return JsonResponse({
-                "message": "Usuário cadastrado com sucesso",
-                "nome": user.nome,
-                "matricula": user.matricula,
-                "id": user.id,  
-                "placa_path": cropped_plate_path
-            })
+            if created:
+                # Usuário foi registrado
+                return JsonResponse({
+                    "message": "Usuário cadastrado com sucesso",
+                    "nome": user.nome,
+                    "matricula": user.matricula,
+                    "id": user.id,
+                    "placa_path": cropped_plate_path
+                })
+            else:
+                # Usuário já existe, faz login
+                return JsonResponse({
+                    "message": "Login bem-sucedido",
+                    "nome": user.nome,
+                    "matricula": user.matricula,
+                    "id": user.id,
+                    "placa_path": cropped_plate_path
+                })
 
         except Exception as e:
             return JsonResponse({"message": f"Erro ao processar a imagem: {str(e)}"}, status=500)
@@ -175,9 +180,8 @@ def calcular_caminho(request):
         metodo = request.GET.get('metodo')
         inicio = request.GET.get('inicio')
         destino = request.GET.get('destino')
-        user_id = request.GET.get('user_id')  # ID do usuário logado enviado pelo frontend
+        user_id = request.GET.get('user_id') 
 
-        # Verificar se o usuário existe
         try:
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
@@ -190,8 +194,7 @@ def calcular_caminho(request):
         elif metodo == 'aprofundamento_progressivo':
             caminho, custo, nos_explorados = grafo.aprofundamento_progressivo(inicio, destino)
         elif metodo == 'procura_sofrega':
-            caminho, nos_explorados = grafo.procura_sofrega(inicio, destino)
-            custo = None
+            caminho, custo, nos_explorados = grafo.procura_sofrega(inicio, destino)
         elif metodo == 'a_estrela':
             caminho, custo, nos_explorados = grafo.a_estrela(inicio, destino)
         else:
@@ -234,7 +237,6 @@ def listar_viagens(request):
         # Obter todas as viagens associadas ao usuário
         viagens = Viagem.objects.filter(user=user).order_by('-data_partida')
 
-        # Serializar as viagens para JSON
         viagens_serializadas = [
             {
                 "id": viagem.id,

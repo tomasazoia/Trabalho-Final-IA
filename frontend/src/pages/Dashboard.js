@@ -85,7 +85,8 @@ function Dashboard() {
             <div className="resumo-box">
               {resultado && resultado.metodo && (
                 <p><strong>Método:</strong> {resultado.metodo.replace("_", " ").toUpperCase()}</p>
-              )}              <p><strong>Distância Total:</strong> {resultado.custo} km</p>
+              )}              
+              <p><strong>Distância Total:</strong> {resultado.custo} km</p>
               <p><strong>Nós Explorados:</strong> {resultado.nos_explorados}</p>
             </div>
 
