@@ -1,18 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Home, History, LogOut } from "lucide-react"; // Ícones modernos
+import { Home, History, LogOut } from "lucide-react";
 import "../pages/styles/Sidebar.css";
 
 function Sidebar() {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
 
-  // Recupera o nome do utilizador do localStorage
   const userName = localStorage.getItem("userName");
   const matricula = localStorage.getItem("matricula");
 
   const handleLogout = () => {
-    // Limpa o localStorage ao fazer logout
     localStorage.removeItem("userId");
     localStorage.removeItem("userName");
     localStorage.removeItem("matricula");
@@ -33,7 +31,6 @@ function Sidebar() {
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
     >
-      {/* Nome do utilizador logado */}
       {expanded && (
         <div className="text-center mb-4">
           <p className="mb-0">Bem-vindo,</p>

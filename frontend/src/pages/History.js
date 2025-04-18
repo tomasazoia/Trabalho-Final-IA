@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./styles/History.css";
-import Sidebar from "../components/Sidebar"; // Importa o componente Sidebar
+import Sidebar from "../components/Sidebar";
 
 function History() {
-  const [viagens, setViagens] = useState([]); // Estado para armazenar as viagens
-  const [loading, setLoading] = useState(true); // Estado para exibir o carregamento
-  const [error, setError] = useState(null); // Estado para erros
+  const [viagens, setViagens] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Função para buscar as viagens do usuário logado
     const fetchViagens = async () => {
       try {
-        const userId = localStorage.getItem("userId"); // Recupera o ID do usuário logado
+        const userId = localStorage.getItem("userId");
         const response = await axios.get("http://127.0.0.1:8000/api/listar_viagens/", {
           params: { user_id: userId },
         });
-        setViagens(response.data.viagens); // Armazena as viagens no estado
+        setViagens(response.data.viagens);
         setLoading(false);
       } catch (error) {
         console.error("Erro ao buscar as viagens:", error);
@@ -26,7 +25,7 @@ function History() {
     };
 
     fetchViagens();
-  }, []); // Executa apenas uma vez ao carregar o componente
+  }, []);
 
   if (loading) {
     return <div className="loading">Carregando histórico de viagens...</div>;
@@ -38,7 +37,7 @@ function History() {
 
   return (
     <div className="history-page">
-      <Sidebar /> {/* Renderiza o componente Sidebar */}
+      <Sidebar />
       <div className="history-content">
         <h1>Histórico de Viagens</h1>
         {viagens.length > 0 ? (

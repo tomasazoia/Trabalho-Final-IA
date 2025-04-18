@@ -18,8 +18,8 @@ const WebcamCapture = ({ onCapture }) => {
         <Webcam
           ref={webcamRef}
           screenshotFormat="image/jpeg"
-          width={300} // Define a largura
-          height={200} // Define a altura
+          width={300}
+          height={200}
           style={{ borderRadius: "10px", boxShadow: "0 4px 8px rgba(0,0,0,0.2)" }}
         />
       </div>

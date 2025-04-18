@@ -24,7 +24,7 @@ function Dashboard() {
     }
 
     try {
-      const userId = localStorage.getItem("userId"); // Recupera o ID do usuário logado
+      const userId = localStorage.getItem("userId");
 
       const response = await axios.get("http://127.0.0.1:8000/api/calcular_caminho/", {
         params: { metodo, inicio, destino,  user_id: userId },

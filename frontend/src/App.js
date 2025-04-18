@@ -48,7 +48,7 @@ function Login() {
         localStorage.setItem("userId", data.id);
         localStorage.setItem("userName", data.nome);
         localStorage.setItem("matricula", data.matricula);
-        setMessage(data.message); // Exibe a mensagem do backend
+        setMessage(data.message);
         setTimeout(() => {
           navigate("/dashboard");
         }, 2000);
